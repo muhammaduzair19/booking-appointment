@@ -7,6 +7,7 @@ const Doctors = () => {
     const { speciality } = useParams();
     const { doctors } = useAppContext();
     const [filteredDoc, setFilteredDoc] = useState([]);
+    const [showFilter, setShowFilters] = useState(false);
 
     const getFilteredDoctors = () => {
         if (speciality) {
@@ -35,7 +36,19 @@ const Doctors = () => {
                 Brows through the doctors specialist
             </p>
             <div className="flex flex-col sm:flex-row items-start gap-10  mt-5">
-                <div className="flex flex-col text-gray-600 text-sm gap-4">
+                <button
+                    onClick={() => setShowFilters((prev) => !prev)}
+                    className={`capitalize py-1 px-3 border rounded text-sm transition-all sm:hidden ${
+                        showFilter ? "bg-primary text-white" : ""
+                    }`}
+                >
+                    filters
+                </button>
+                <div
+                    className={`flex-col text-gray-600 text-sm gap-4 ${
+                        showFilter ? "flex" : " hidden sm:flex"
+                    }`}
+                >
                     {specialities?.map((s) => (
                         <p
                             onClick={() => {
@@ -43,7 +56,11 @@ const Doctors = () => {
                                     ? navigate("/doctors")
                                     : navigate(`/doctors/${s}`);
                             }}
-                            className={`w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer capitalize ${speciality === s ?  'bg-indigo-100 text-black' : ''}`}
+                            className={`w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer capitalize ${
+                                speciality === s
+                                    ? "bg-indigo-100 text-black"
+                                    : ""
+                            }`}
                         >
                             {s.split("-").join(" ")}
                         </p>
