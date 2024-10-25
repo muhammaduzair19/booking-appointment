@@ -3,13 +3,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAppContext } from "../context/context";
 
 const Doctors = () => {
+    const { doctors } = useAppContext();
     const navigate = useNavigate();
     const { speciality } = useParams();
-    const { doctors } = useAppContext();
+
     const [filteredDoc, setFilteredDoc] = useState([]);
     const [showFilter, setShowFilters] = useState(false);
 
-    const getFilteredDoctors = () => {
+    const getFilteredDoctors = (doctors) => {
         if (speciality) {
             const filtered = doctors?.filter(
                 (doctor) => doctor.speciality === speciality
@@ -19,14 +20,16 @@ const Doctors = () => {
             setFilteredDoc(doctors);
         }
     };
+
     useEffect(() => {
-        getFilteredDoctors();
+        getFilteredDoctors(doctors);
     }, [speciality]);
+
     const specialities = [
         "general-physician",
         "gynecologist",
         "dermatologist",
-        "pediatracians",
+        "pediatricians",
         "neurologist",
         "gastroenterologist",
     ];
@@ -80,8 +83,24 @@ const Doctors = () => {
                             />
                             <div className="p-4">
                                 <div className="flex items-center gap-3 text-sm text-center text-green-600">
-                                    <p className="w-2 h-2 bg-green-500 rounded-full"></p>
-                                    <p>Available</p>
+                                    <p
+                                        className={`w-3 h-3 rounded-full ${
+                                            item.available
+                                                ? "bg-green-500 "
+                                                : "bg-red-500 "
+                                        }`}
+                                    ></p>
+                                    <p
+                                        className={`${
+                                            item.available
+                                                ? "text-green-500 "
+                                                : "text-red-500 "
+                                        }`}
+                                    >
+                                        {item.available
+                                            ? "Available"
+                                            : "Not Available"}
+                                    </p>
                                 </div>
                                 <p className="text-gray-900 text-lg font-medium w-full truncate">
                                     {item.name}
