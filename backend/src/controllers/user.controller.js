@@ -2,6 +2,7 @@ import validator from "validator";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User } from "../models/userSchema.js";
+import { uploadOnCloudinary } from "../config/cloudinary.js";
 // api register user
 
 export const registerUser = async (req, res) => {
@@ -75,7 +76,7 @@ export const loginUser = async (req, res) => {
 
         if (!isCorrect) {
             return res.json({
-                success: true,
+                success: false,
                 message: "Incorrect Credentials",
             });
         }
@@ -83,6 +84,50 @@ export const loginUser = async (req, res) => {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
         res.json({ success: true, token, message: "Login Successfully" });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// API GET USER DATA
+
+export const getUserData = async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const user = await User.findById(userId);
+        res.json({ success: true, user });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// Update user data
+
+export const updateProfile = async (req, res) => {
+    try {
+        const { userId, username, phone, address, dateOfBirth, gender } =
+            req.body;
+        const imageFile = req.file;
+
+        if (!username || !phone || !dateOfBirth || !gender) {
+            return res.json({ success: true, message: "data missing" });
+        }
+        const user = await User.findByIdAndUpdate(userId, {
+            username,
+            phone,
+            dateOfBirth,
+            address: JSON.parse(address),
+            gender,
+        });
+
+        if (imageFile) {
+            const imageUpload = await uploadOnCloudinary(imageFile.path);
+            const imageURL = imageUpload.secure_url;
+            await User.findByIdAndUpdate(userId, { image: imageURL });
+        }
+        res.json({ success: true, user, message: "Profile Updated" });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });
