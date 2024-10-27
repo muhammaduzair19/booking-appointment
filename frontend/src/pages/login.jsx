@@ -1,17 +1,63 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useAppContext } from "../context/context";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
     const [state, setState] = useState("Sign Up");
+    const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [name, setName] = useState("");
+    const [username, setUsername] = useState("");
+    const { token, setToken, backendUrl } = useAppContext();
 
-    const onSubmit = async (e) => {
+    const onSubmitHandler = async (e) => {
         e.preventDefault();
+        try {
+            if (state === "Sign Up") {
+                const { data } = await axios.post(
+                    backendUrl + "/user/register",
+                    { username, email, password }
+                );
+
+                if (data.success) {
+                    localStorage.setItem("userToken", data.token);
+                    setToken(data.token);
+                    toast.success("Register Successfully");
+                  
+                } else {
+                    toast.error(data.message);
+                }
+            } else {
+                const { data } = await axios.post(backendUrl + "/user/login", {
+                    email,
+                    password,
+                });
+
+                if (data.success) {
+                    localStorage.setItem("userToken", data.token);
+                    setToken(data.token);
+                    toast.success("Login Successfully");
+                } else {
+                    toast.error(data.message);
+                }
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
     };
+
+    useEffect(() => {
+        if (token) {
+            setTimeout(() => {
+                navigate("/");
+            }, 3000);
+        }
+    }, [token]);
     return (
         <form
-            onSubmit={onSubmit}
+            onSubmit={onSubmitHandler}
             className="w-full min-h-[80vh] flex items-center "
         >
             <div className="flex flex-col m-auto gap-3 items-start p-9 min-w-[340px] sm:min-w-96 border rounded-xl text-zinc-600 text-sm shadow-lg">
@@ -27,9 +73,9 @@ const Login = () => {
                         <p>Fullname</p>
                         <input
                             className="border border-zinc-300 rounded w-full p-2 mt-1"
-                            value={name}
+                            value={username}
                             type="text"
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={(e) => setUsername(e.target.value)}
                         />
                     </div>
                 )}
@@ -51,7 +97,10 @@ const Login = () => {
                         onChange={(e) => setPassword(e.target.value)}
                     />
                 </div>
-                <button className="bg-primary text-white w-full py-2 rounded-md text-base">
+                <button
+                    type="submit"
+                    className="bg-primary text-white w-full py-2 rounded-md text-base"
+                >
                     {state === "Sign Up" ? "Create Account" : "Login"}
                 </button>
                 {state === "Sign Up" ? (

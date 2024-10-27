@@ -1,3 +1,20 @@
+
+
+/node_modules
+/dist
+./dist
+
+*.env
+.env
+.env.*
+
+
+
+
+
+
+
+
 # Logs
 logs
 *.log
@@ -22,11 +39,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-/node_modules
-/dist
-./dist
-
-*.env
-.env
-.env.*

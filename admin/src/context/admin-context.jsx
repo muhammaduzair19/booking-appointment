@@ -33,6 +33,8 @@ const AdminContextProvider = ({ children }) => {
             toast.error(error.message);
         }
     };
+
+
     const changeAvailability = async (docId) => {
         try {
             const { data } = await axios.post(
@@ -50,6 +52,8 @@ const AdminContextProvider = ({ children }) => {
             toast.error(error.message);
         }
     };
+
+    
     const value = { atoken, setAtoken, backendUrl, doctors, getAllDoctors , changeAvailability};
 
     return (
