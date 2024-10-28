@@ -6,14 +6,13 @@ import { useAppContext } from "../context/context";
 const Navbar = () => {
     const navigate = useNavigate();
     const [showMenu, setShowMenu] = useState(false);
-    const { token, setToken } = useAppContext();
+    const { token, setToken, userData } = useAppContext();
 
     const logout = () => {
         setToken(false);
         localStorage.removeItem("userToken");
     };
 
-    
     return (
         <div className="flex items-center justify-between text-sm py-4 mb-5 border-b border-b-gray-500">
             <img
@@ -57,11 +56,11 @@ const Navbar = () => {
                 </NavLink>
             </ul>
             <div className=" flex items-center gap-4 ">
-                {token ? (
+                {token && userData ? (
                     <div className="flex items-center cursor-pointer gap-2 group relative">
                         <img
                             className="w-8 rounded-full"
-                            src={assets.profile_pic}
+                            src={userData.image}
                             alt=""
                         />
                         <div className="absolute top-0 right-0 pt-14 text-base font-medium text-gray-600 z-20 hidden group-hover:block">

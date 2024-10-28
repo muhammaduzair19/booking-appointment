@@ -1,16 +1,20 @@
 import React, { createRef, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAppContext } from "../context/context";
 import { assets } from "../assets/assets_frontend/assets";
 import RelatedDoctors from "../components/related-doctors";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 const Appointment = () => {
     const { docId } = useParams();
-    const { doctors } = useAppContext();
+    const { doctors, backendUrl, currencySymbol, token, getDoctorsData } =
+        useAppContext();
     const [docInfo, setDocInfo] = useState({});
     const [docSlots, setDocSlots] = useState([]);
     const [slotIndex, setSlotIndex] = useState(0);
     const [slotTime, setSlotTime] = useState("");
+    const navigate = useNavigate();
     const daysOfWeek = ["SUN", "MON", "TUES", "WED", "THURS", "FRI", "SAT"];
 
     const getDocInfo = () => {
@@ -54,14 +58,35 @@ const Appointment = () => {
                     minute: "2-digit",
                 });
 
-                timeSlots.push({
-                    date: new Date(currentDate),
-                    time: formattedTime,
-                });
+                let day = currentDate.getDate();
+                let month = currentDate.getMonth() + 1;
+                let year = currentDate.getFullYear();
+
+                const slotDate = day + "_" + month + "_" + year;
+
+                const slotTime = formattedTime;
+
+                const isSlotAvailable =
+                    docInfo?.slots_booked[slotDate] &&
+                    docInfo?.slots_booked[slotDate].includes(slotTime)
+                        ? false
+                        : true;
+
+                console.log("isSlotAvailable==>", isSlotAvailable);
+
+                if (isSlotAvailable) {
+                    timeSlots.push({
+                        date: new Date(currentDate),
+                        time: formattedTime,
+                    });
+                }
 
                 //increase time by 30 minutes
                 currentDate.setMinutes(currentDate.getMinutes() + 30);
             }
+
+            console.log(timeSlots);
+            
             setDocSlots((p) => [...p, timeSlots]);
         }
     };
@@ -73,6 +98,38 @@ const Appointment = () => {
     useEffect(() => {
         getAvailableSlots();
     }, [docInfo]);
+
+    const bookAppointment = async () => {
+        console.log({ token });
+
+        if (!token) {
+            toast.warn("Login to book appointment");
+            return navigate("/login");
+        }
+        try {
+            const date = docSlots[slotIndex][0].date;
+            let day = date.getDate();
+            let month = date.getMonth() + 1;
+            let year = date.getFullYear();
+
+            const slotDate = day + "_" + month + "_" + year;
+            const { data } = await axios.post(
+                backendUrl + "/user/book-appointment",
+                { docId, slotDate, slotTime },
+                { headers: { token } }
+            );
+
+            if (data.success) {
+                toast.success(data.message);
+                getDoctorsData();
+                navigate("/my-appointment");
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
 
     return (
         docInfo && (
@@ -118,7 +175,7 @@ const Appointment = () => {
                         <p className=" text-gray-400 font-medium mt-2">
                             Appointment fee{" "}
                             <span className="text-gray-600">
-                                ${docInfo.fees}
+                                {currencySymbol} {docInfo.fees}
                             </span>
                         </p>
                     </div>
@@ -128,7 +185,7 @@ const Appointment = () => {
                     <p>Booking Slots</p>
                     <div className="flex gap-3 items-center w-full overflow-x-scroll  mt-4">
                         {docSlots.length &&
-                            docSlots.map((slot, idx) => (
+                            docSlots?.map((slot, idx) => (
                                 <div
                                     key={idx}
                                     onClick={() => setSlotIndex(idx)}
@@ -147,7 +204,7 @@ const Appointment = () => {
                             ))}
                     </div>
                     <div className="flex items-center gap-3 w-full overflow-x-scroll mt-4">
-                        {docSlots.length &&
+                        {docSlots?.length &&
                             docSlots[slotIndex].map((time, idx) => (
                                 <p
                                     onClick={() => setSlotTime(time.time)}
@@ -162,7 +219,10 @@ const Appointment = () => {
                                 </p>
                             ))}
                     </div>
-                    <button className="bg-primary text-white text-sm font-light  px-14 py-3 rounded-full my-6 cursor-pointer">
+                    <button
+                        onClick={bookAppointment}
+                        className="bg-primary text-white text-sm font-light  px-14 py-3 rounded-full my-6 cursor-pointer"
+                    >
                         Book an Appointement
                     </button>
                 </div>
