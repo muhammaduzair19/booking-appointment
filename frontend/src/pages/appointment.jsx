@@ -39,7 +39,7 @@ const Appointment = () => {
             endTime.setHours(18, 0, 0, 0);
 
             //setting hours
-            if (today.getDate === currentDate.getDate()) {
+            if (today.getDate() === currentDate.getDate()) {
                 currentDate.setHours(
                     currentDate.getHours() > 10
                         ? currentDate.getHours() + 1
@@ -65,14 +65,13 @@ const Appointment = () => {
                 const slotDate = day + "_" + month + "_" + year;
 
                 const slotTime = formattedTime;
+                console.log(docInfo?.slots_booked);
 
                 const isSlotAvailable =
                     docInfo?.slots_booked[slotDate] &&
                     docInfo?.slots_booked[slotDate].includes(slotTime)
                         ? false
                         : true;
-
-                console.log("isSlotAvailable==>", isSlotAvailable);
 
                 if (isSlotAvailable) {
                     timeSlots.push({
@@ -82,11 +81,9 @@ const Appointment = () => {
                 }
 
                 //increase time by 30 minutes
-                currentDate.setMinutes(currentDate.getMinutes() + 30);
+                currentDate.setMinutes(currentDate.getMinutes() + 45);
             }
 
-            console.log(timeSlots);
-            
             setDocSlots((p) => [...p, timeSlots]);
         }
     };
@@ -100,8 +97,6 @@ const Appointment = () => {
     }, [docInfo]);
 
     const bookAppointment = async () => {
-        console.log({ token });
-
         if (!token) {
             toast.warn("Login to book appointment");
             return navigate("/login");

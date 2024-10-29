@@ -141,8 +141,8 @@ export const updateProfile = async (req, res) => {
 export const bookAppointment = async (req, res) => {
     try {
         const { userId, docId, slotTime, slotDate } = req.body;
-        const docData = await Doctor.findById(docId).select("-password");
 
+        const docData = await Doctor.findById(docId).select("-password");
         if (!docData.available) {
             return res.json({
                 success: false,
@@ -150,25 +150,33 @@ export const bookAppointment = async (req, res) => {
             });
         }
 
-        let slots_booked = docData.slots_booked;
-        if (slots_booked[slotDate]) {
-            if (slots_booked[slotDate].includes(slotTime)) {
-                return res.json({
-                    success: false,
-                    message: "Slot not available",
-                });
-            } else {
-                slots_booked[slotDate].push(slotTime);
-            }
-        } else {
-            slots_booked[slotDate] = [];
-            slots_booked[slotDate].push(slotTime);
+        // Initialize slots_booked as a Map if it's not already
+        let slots_booked = docData.slots_booked || new Map();
+
+        // Retrieve the slots for the given date
+        let dateSlots = slots_booked.get(slotDate) || [];
+
+        // Check if the slot time is already booked
+        if (dateSlots.includes(slotTime)) {
+            return res.json({
+                success: false,
+                message: "Slot not available",
+            });
         }
 
+        // Add the slot time to the date slots
+        dateSlots.push(slotTime);
+
+        // Update the Map with the new slot time for the specified date
+        slots_booked.set(slotDate, dateSlots);
+
+        // Save the updated slots_booked Map back to the doctor document
+        await Doctor.findByIdAndUpdate(docId, { slots_booked });
+
+        // Retrieve the user data for booking info (optional)
         const userData = await User.findById(userId).select("-password");
 
-        delete userData.slots_booked;
-
+        // Create the appointment data and save
         const appointmentData = {
             userId,
             docId,
@@ -179,15 +187,12 @@ export const bookAppointment = async (req, res) => {
             slotDate,
             date: Date.now(),
         };
-
         const newAppointment = new Appointment(appointmentData);
         await newAppointment.save();
 
-        //save new slots data in doc data
-        await Doctor.findByIdAndUpdate(docId, { slots_booked });
         res.json({ success: true, message: "Appointment Booked" });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.json({ success: false, message: error.message });
     }
 };
@@ -200,6 +205,40 @@ export const listAppointment = async (req, res) => {
 
         const appointments = await Appointment.find({ userId });
         res.json({ success: true, appointments });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+export const cancelAppointment = async (req, res) => {
+    try {
+        const { userId, appointmentId } = req.body;
+
+        const appointmentData = await Appointment.findById(appointmentId);
+        if (appointmentData.userId != userId) {
+            return res.json({ success: false, message: "Unauthorized action" });
+        }
+
+        await Appointment.findByIdAndUpdate(appointmentId, { cancelled: true });
+
+        const { docId, slotDate, slotTime } = appointmentData;
+
+        const docData = await Doctor.findById(docId);
+
+        // Initialize slots_booked as a Map if it's not already
+        let slots_booked = docData.slots_booked || new Map();
+
+        // Retrieve the slots for the given date
+        let dateSlots = slots_booked.get(slotDate) || [];
+
+        dateSlots = dateSlots?.filter((e) => e !== slotTime);
+
+        slots_booked.set(slotDate, dateSlots);
+        
+        await Doctor.findByIdAndUpdate(docId, { slots_booked });
+
+        res.json({ success: true, message: "Appointment Cancelled" });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });
