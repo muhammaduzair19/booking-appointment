@@ -62,6 +62,27 @@ const MyAppointment = () => {
         }
     };
 
+    const onlinePayment = async (appId) => {
+        try {
+            const { data } = await axios.post(
+                backendUrl + "/user/payment",
+                { appointmentId: appId },
+                { headers: { token } }
+            );
+
+            if (data.success) {
+                console.log(data.sessionUrl);
+
+                window.open(data.data.sessionUrl);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            console.log(error);
+            toast.error(error.message);
+        }
+    };
+
     useEffect(() => {
         getAppointments();
     }, [token]);
@@ -114,9 +135,23 @@ const MyAppointment = () => {
                             <div className="flex flex-col justify-end gap-3">
                                 {!doc.cancelled ? (
                                     <>
-                                        <button className="px-5 py-1 border border-gray-300 sm:min-w-32 rounded-sm hover:bg-primary hover:text-white transition-all duration-300">
-                                            {doc.payment ? "Paid" : "Pay"}
-                                        </button>
+                                        {doc.payment ? (
+                                            <p
+                                                className={` px-5 py-1 border border-gray-300 sm:min-w-32 rounded-sm text-white bg-green-600 text-center`}
+                                            >
+                                                Paid!
+                                            </p>
+                                        ) : (
+                                            <button
+                                                onClick={() =>
+                                                    onlinePayment(doc._id)
+                                                }
+                                                className={` px-5 py-1 border border-gray-300 sm:min-w-32 rounded-sm hover:bg-primary hover:text-white transition-all duration-300`}
+                                            >
+                                                {doc.payment ? "Paid" : "Pay"}
+                                            </button>
+                                        )}
+
                                         {!doc.isCompleted && (
                                             <button
                                                 onClick={() =>

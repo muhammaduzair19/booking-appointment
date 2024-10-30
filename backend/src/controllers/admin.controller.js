@@ -84,9 +84,7 @@ export const addDoctor = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
-
 // LOGIN ADMIN
-
 export const loginAdmin = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -106,7 +104,6 @@ export const loginAdmin = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
-
 export const getAllDoctors = async (req, res) => {
     try {
         const doctors = await Doctor.find({}).select("-password");

@@ -13,7 +13,6 @@ export const changeAvailabilty = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
-
 export const doctorsList = async (req, res) => {
     try {
         const doctors = await Doctor.find({}).select(["-password", "-email"]);

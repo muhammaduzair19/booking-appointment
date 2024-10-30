@@ -5,8 +5,11 @@ import { User } from "../models/userSchema.js";
 import { uploadOnCloudinary } from "../config/cloudinary.js";
 import { Doctor } from "../models/doctorSchema.js";
 import { Appointment } from "../models/appointmentModel.js";
-// api register user
+import Stripe from "stripe";
 
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+// api register user
 export const registerUser = async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -48,7 +51,6 @@ export const registerUser = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
-
 export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -91,9 +93,7 @@ export const loginUser = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
-
 // API GET USER DATA
-
 export const getUserData = async (req, res) => {
     try {
         const { userId } = req.body;
@@ -104,9 +104,7 @@ export const getUserData = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
-
 // Update user data
-
 export const updateProfile = async (req, res) => {
     try {
         const { userId, username, phone, address, dateOfBirth, gender } =
@@ -137,7 +135,6 @@ export const updateProfile = async (req, res) => {
 };
 
 // book appointment
-
 export const bookAppointment = async (req, res) => {
     try {
         const { userId, docId, slotTime, slotDate } = req.body;
@@ -198,7 +195,6 @@ export const bookAppointment = async (req, res) => {
 };
 
 // api to get all appointment that we booked
-
 export const listAppointment = async (req, res) => {
     try {
         const { userId } = req.body;
@@ -235,10 +231,100 @@ export const cancelAppointment = async (req, res) => {
         dateSlots = dateSlots?.filter((e) => e !== slotTime);
 
         slots_booked.set(slotDate, dateSlots);
-        
+
         await Doctor.findByIdAndUpdate(docId, { slots_booked });
 
         res.json({ success: true, message: "Appointment Cancelled" });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+export const stripeRedirect = async (req, res) => {
+    try {
+        const { userId, appointmentId } = req.body;
+
+        if (!appointmentId) {
+            return res.json({
+                success: false,
+                message: "Invalid appointment Id",
+            });
+        }
+
+        const appointmentData = await Appointment.findById(appointmentId);
+
+        if (appointmentData.userId != userId) {
+            return res.json({ success: false, message: "Unauthorized action" });
+        }        
+
+        if (appointmentData.payment) {
+            return res.json({ success: false, message: "Already Paid" });
+        }
+
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ["card"],
+            line_items: [
+                {
+                    price_data: {
+                        currency: "pkr",
+                        product_data: {
+                            name: `Appointment ID: ${appointmentId}`,
+                        },
+                        unit_amount: appointmentData.amount * 100,
+                    },
+                    quantity: 1,
+                },
+            ],
+            mode: "payment",
+            success_url: `${process.env.FRONTEND_URL}/payment-sucessfull/${appointmentId}?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${process.env.FRONTEND_URL}/cancel`,
+            client_reference_id: appointmentId,
+        });
+
+        return res.status(200).json({
+            success: true,
+            data: { sessionId: session.id, sessionUrl: session.url },
+            message: "checkout session succesful",
+        });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+export const savePayment = async (req, res) => {
+    try {
+        const { appointmentId, sessionId } = req.body;
+        if (!appointmentId || !sessionId) {
+            return res.json({
+                success: false,
+                message: "Appointment Id and Session Id required",
+            });
+        }
+
+        const appointmentData = await Appointment.findById(appointmentId);
+
+        if (!appointmentData) {
+            return res.json({ success: false, message: "No such appointment" });
+        }
+
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+        if (
+            session.payment_status !== "paid" &&
+            session.status !== "complete"
+        ) {
+            return res.json({
+                success: false,
+                data: { cancel_url: session.cancel_url },
+                message: "Payment not successfull",
+            });
+        }
+
+        await Appointment.findByIdAndUpdate(appointmentId, { payment: true });
+
+        res.json({ success: true, message: "Payment Done" });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });

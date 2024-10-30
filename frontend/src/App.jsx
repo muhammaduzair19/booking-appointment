@@ -12,6 +12,8 @@ import Navbar from "./components/navbar";
 import Footer from "./components/footer";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import PaymentSuccessfull from "./pages/payment-successfull";
+import PayementCancel from "./pages/payment-cancel";
 
 const App = () => {
     return (
@@ -28,6 +30,8 @@ const App = () => {
                 <Route path="/my-profile" element={<Profile />} />
                 <Route path="/appointment/:docId" element={<Appointment />} />
                 <Route path="/my-appointment" element={<MyAppointment />} />
+                <Route path="/payment-sucessfull/:appointmentId" element={<PaymentSuccessfull />} />
+                <Route path="/cancel" element={<PayementCancel />} />
             </Routes>
             <Footer />
         </div>
