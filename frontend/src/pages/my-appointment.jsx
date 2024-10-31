@@ -8,26 +8,26 @@ const MyAppointment = () => {
     const [appointments, setAppointments] = useState([]);
     const months = [
         "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-    ];
-    const slotDateFormat = (date) => {
-        const newDate = date.split("_");
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+        ];
+        const slotDateFormat = (date) => {
+            const newDate = date.split("_");
 
-        return `${newDate[0]} - ${months[Number(newDate[1]) - 1]} - ${
-            newDate[2]
-        }`;
-    };
-    const getAppointments = async () => {
+            return `${newDate[0]} - ${months[Number(newDate[1]) - 1]} - ${
+                newDate[2]
+            }`;
+        };
+        const getAppointments = async () => {
         try {
             const { data } = await axios.get(
                 backendUrl + "/user/appointments",

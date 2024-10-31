@@ -1,6 +1,7 @@
 import validator from "validator";
 import bcrypt from "bcrypt";
 import { Doctor } from "../models/doctorSchema.js";
+import { Appointment } from "../models/appointmentModel.js";
 import { uploadOnCloudinary } from "../config/cloudinary.js";
 import jwt from "jsonwebtoken";
 
@@ -114,3 +115,43 @@ export const getAllDoctors = async (req, res) => {
     }
 };
 
+export const allAppointmentsAdmin = async (req, res) => {
+    try {
+        const appointments = await Appointment.find({});
+        res.json({ success: true, appointments });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+export const cancelAppointment = async (req, res) => {
+    try {
+        const {  appointmentId } = req.body;
+
+        const appointmentData = await Appointment.findById(appointmentId);
+        
+        await Appointment.findByIdAndUpdate(appointmentId, { cancelled: true });
+
+        const { docId, slotDate, slotTime } = appointmentData;
+
+        const docData = await Doctor.findById(docId);
+
+        // Initialize slots_booked as a Map if it's not already
+        let slots_booked = docData.slots_booked || new Map();
+
+        // Retrieve the slots for the given date
+        let dateSlots = slots_booked.get(slotDate) || [];
+
+        dateSlots = dateSlots?.filter((e) => e !== slotTime);
+
+        slots_booked.set(slotDate, dateSlots);
+
+        await Doctor.findByIdAndUpdate(docId, { slots_booked });
+
+        res.json({ success: true, message: "Appointment Cancelled" });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};

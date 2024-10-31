@@ -6,6 +6,7 @@ const AdminContext = createContext();
 
 const AdminContextProvider = ({ children }) => {
     const [doctors, setDoctors] = useState([]);
+    const [appointments, setAppointments] = useState([]);
     const [atoken, setAtoken] = useState(() => {
         try {
             const token = localStorage.getItem("atoken");
@@ -34,7 +35,6 @@ const AdminContextProvider = ({ children }) => {
         }
     };
 
-
     const changeAvailability = async (docId) => {
         try {
             const { data } = await axios.post(
@@ -53,8 +53,54 @@ const AdminContextProvider = ({ children }) => {
         }
     };
 
-    
-    const value = { atoken, setAtoken, backendUrl, doctors, getAllDoctors , changeAvailability};
+    const getAllAppointments = async () => {
+        try {
+            const { data } = await axios.get(
+                backendUrl + "/admin/all-appointments",
+                { headers: { atoken } }
+            );
+            if (data.success) {
+                setAppointments(data.appointments);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
+
+    const cancelAppointment = async (appointmentId) => {
+        try {
+            const { data } = await axios.post(
+                backendUrl + "/admin/cancel-appointment",
+                { appointmentId },
+                { headers: { atoken } }
+            );
+            console.log(data);
+
+            if (data.success) {
+                toast.success("Appointment Cancelled");
+                getAllAppointments();
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
+
+    const value = {
+        atoken,
+        setAtoken,
+        backendUrl,
+        doctors,
+        appointments,
+        setAppointments,
+        getAllAppointments,
+        getAllDoctors,
+        cancelAppointment,
+        changeAvailability,
+    };
 
     return (
         <AdminContext.Provider value={value}>{children}</AdminContext.Provider>
