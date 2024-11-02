@@ -7,6 +7,7 @@ const AdminContext = createContext();
 const AdminContextProvider = ({ children }) => {
     const [doctors, setDoctors] = useState([]);
     const [appointments, setAppointments] = useState([]);
+    const [dashboardData, setDashboardData] = useState(false);
     const [atoken, setAtoken] = useState(() => {
         try {
             const token = localStorage.getItem("atoken");
@@ -81,6 +82,24 @@ const AdminContextProvider = ({ children }) => {
             if (data.success) {
                 toast.success("Appointment Cancelled");
                 getAllAppointments();
+                getDashboardData()
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
+
+    const getDashboardData = async (req, res) => {
+        try {
+            const { data } = await axios.get(backendUrl + "/admin/dashboard", {
+                headers: { atoken },
+            });
+
+            if (data.success) {
+                setDashboardData(data.dashData);
+                console.log (data.dashData);
             } else {
                 toast.error(data.message);
             }
@@ -100,6 +119,9 @@ const AdminContextProvider = ({ children }) => {
         getAllDoctors,
         cancelAppointment,
         changeAvailability,
+        getDashboardData,
+        dashboardData,
+        setDashboardData,
     };
 
     return (

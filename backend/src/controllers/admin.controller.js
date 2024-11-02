@@ -4,6 +4,7 @@ import { Doctor } from "../models/doctorSchema.js";
 import { Appointment } from "../models/appointmentModel.js";
 import { uploadOnCloudinary } from "../config/cloudinary.js";
 import jwt from "jsonwebtoken";
+import { User } from "../models/userSchema.js";
 
 //API FOR ADD DOCTOR
 export const addDoctor = async (req, res) => {
@@ -127,10 +128,10 @@ export const allAppointmentsAdmin = async (req, res) => {
 
 export const cancelAppointment = async (req, res) => {
     try {
-        const {  appointmentId } = req.body;
+        const { appointmentId } = req.body;
 
         const appointmentData = await Appointment.findById(appointmentId);
-        
+
         await Appointment.findByIdAndUpdate(appointmentId, { cancelled: true });
 
         const { docId, slotDate, slotTime } = appointmentData;
@@ -150,6 +151,26 @@ export const cancelAppointment = async (req, res) => {
         await Doctor.findByIdAndUpdate(docId, { slots_booked });
 
         res.json({ success: true, message: "Appointment Cancelled" });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+export const adminDashboard = async (req, res) => {
+    try {
+        const doctors = await Doctor.find({});
+        const users = await User.find({});
+        const appointments = await Appointment.find({});
+
+        const dashData = {
+            doctors: doctors.length,
+            patients: users.length,
+            appointments: appointments.length,
+            latestAppointments: appointments.reverse().slice(0, 5),
+        };
+
+        res.json({ success: true, dashData });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });

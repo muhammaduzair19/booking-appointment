@@ -3,6 +3,7 @@ import { assets } from "../assets/assets";
 import { useAdminContext } from "../context/admin-context";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useDoctorContext } from "../context/doctor-context";
 
 const Login = () => {
     const [state, setState] = useState("admin");
@@ -10,6 +11,7 @@ const Login = () => {
     const [password, setPassword] = useState("");
 
     const { setAtoken, backendUrl } = useAdminContext();
+    const { setDtoken } = useDoctorContext();
 
     const onSubmitHandler = async (e) => {
         e.preventDefault();
@@ -26,6 +28,21 @@ const Login = () => {
                     toast.error(data.message);
                 }
             } else if (state === "doctor") {
+                const { data } = await axios.post(
+                    backendUrl + "/doctor/login",
+                    {
+                        email,
+                        password,
+                    }
+                );
+                console.log(data);
+
+                if (data.success) {
+                    localStorage.setItem("dtoken", data.token);
+                    setDtoken(data.token);
+                } else {
+                    toast.error(data.message);
+                }
             }
         } catch (error) {}
     };

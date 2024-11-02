@@ -1,17 +1,58 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Login from "./pages/login";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAdminContext } from "./context/admin-context";
 import Navbar from "./components/navbar";
 import Sidebar from "./components/sidebar";
-import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { Navigate, Outlet, Route, Routes, useNavigate } from "react-router-dom";
 import Dashboard from "./pages/admin/dashboard";
 import AllAppointments from "./pages/admin/all-appointments";
 import AddDoctor from "./pages/admin/add-doctor";
 import DoctorsList from "./pages/admin/doctors-list";
+import { useDoctorContext } from "./context/doctor-context";
+import DoctorDashboard from "./pages/doctor/doctor-dashboard";
+import DoctorProfile from "./pages/doctor/doctor-profile";
+import DoctorAppointment from "./pages/doctor/doctor-appointment";
 
 const AdminLayout = () => {
+    const { atoken } = useAdminContext();
+    const { dtoken } = useDoctorContext();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!atoken) {
+            if (dtoken) {
+                navigate("/doctor-dashboard");
+            }
+        }
+    }, [atoken, dtoken]);
+
+    return (
+        <>
+            <Navbar />
+            <div className="flex items-start">
+                <Sidebar />
+                <main className="w-full h-full">
+                    <Outlet />
+                </main>
+            </div>
+        </>
+    );
+};
+const DoctorLayout = () => {
+    const { atoken } = useAdminContext();
+    const { dtoken } = useDoctorContext();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!dtoken) {
+            if (atoken) {
+                navigate("/doctor-dashboard");
+            }
+        }
+    }, [atoken, dtoken]);
+
     return (
         <>
             <Navbar />
@@ -27,11 +68,11 @@ const AdminLayout = () => {
 
 const App = () => {
     const { atoken } = useAdminContext();
-    return atoken ? (
+    const { dtoken } = useDoctorContext();
+    return dtoken || atoken ? (
         <div className="bg-[#f8f9fd]">
             <ToastContainer />
             <Routes>
-                <Route path="*" element={<Navigate to={"/"} />} />
                 <Route element={<AdminLayout />}>
                     <Route path="/" element={<></>} />
                     <Route path="/admin-dashboard" element={<Dashboard />} />
@@ -41,6 +82,21 @@ const App = () => {
                     />
                     <Route path="/add-doctor" element={<AddDoctor />} />
                     <Route path="/doctors-list" element={<DoctorsList />} />
+                </Route>
+                <Route element={<DoctorLayout />}>
+                    <Route
+                        path="*"
+                        element={<Navigate to={"/doctor-dashboard"} />}
+                    />
+                    <Route
+                        path="/doctor-dashboard"
+                        element={<DoctorDashboard />}
+                    />
+                    <Route path="/doctor-profile" element={<DoctorProfile />} />
+                    <Route
+                        path="/doctor-appointments"
+                        element={<DoctorAppointment />}
+                    />
                 </Route>
             </Routes>
         </div>
