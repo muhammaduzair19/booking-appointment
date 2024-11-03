@@ -73,13 +73,11 @@ export const loginDoctor = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
-
 // appointment Docotr api
-
 export const appointmentsDoctor = async (req, res) => {
     try {
         const { docId } = req.body;
-        const appointments = await Appointment.find({ docId }); 
+        const appointments = await Appointment.find({ docId });
         res.json({ success: true, appointments });
     } catch (error) {
         console.log(error);
@@ -87,4 +85,116 @@ export const appointmentsDoctor = async (req, res) => {
     }
 };
 
-// export const completeAppointment = async``
+export const completeAppointment = async (req, res) => {
+    try {
+        const { docId, appointmentId } = req.body;
+
+        const appointmentData = await Appointment.findById(appointmentId);
+        if (appointmentData && appointmentData.docId === docId) {
+            await Appointment.findByIdAndUpdate(appointmentData, {
+                isCompleted: true,
+            });
+            return res.json({
+                success: true,
+                message: "Appointment Completed",
+            });
+        } else {
+            return res.json({
+                success: true,
+                message: "Mark Failed",
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+export const cancelAppointment = async (req, res) => {
+    try {
+        const { docId, appointmentId } = req.body;
+
+        const appointmentData = await Appointment.findById(appointmentId);
+        if (appointmentData && appointmentData.docId === docId) {
+            await Appointment.findByIdAndUpdate(appointmentData, {
+                cancelled: true,
+            });
+            return res.json({
+                success: true,
+                message: "Appointment cancelled",
+            });
+        } else {
+            return res.json({
+                success: true,
+                message: "Cancellation failed",
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+export const doctorDashboard = async (req, res) => {
+    try {
+        const { docId } = req.body;
+
+        const appointments = await Appointment.find({ docId });
+        let earnings = 0;
+
+        appointments.map((appointment) => {
+            if (appointment.isCompleted || appointment.payment) {
+                earnings += appointment.amount;
+            }
+        });
+
+        let patients = [];
+        appointments?.map((appointment) => {
+            if (!patients.includes(appointment.docId)) {
+                patients.push(appointment.docId);
+            }
+        });
+
+        const dashboardData = {
+            earnings,
+            patients: patients.length,
+            appointments: appointments.length,
+            latestAppointments: appointments.reverse().slice(0, 5),
+        };
+
+        res.json({ success: true, dashboardData });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+export const doctorProfile = async (req, res) => {
+    try {
+        const { docId } = req.body;
+
+        const doctorData = await Doctor.findById(docId).select("-password");
+
+        res.json({ success: true, doctorData });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+export const updateDoctorProfile = async (req, res) => {
+    try {
+        const { docId, address, fees, available } = req.body;
+
+        await Doctor.findByIdAndUpdate(docId, {
+            address,
+            fees,
+            available,
+        });
+
+        res.json({ success: true, message: "Profile Updated" });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};

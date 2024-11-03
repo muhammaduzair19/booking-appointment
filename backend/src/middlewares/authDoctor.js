@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 const authDoctor = (req, res, next) => {
     try {
         const { dtoken } = req.headers;
+
         if (!dtoken) {
             return res.json({ success: false, message: "NOT AUTHORIZED" });
         }
