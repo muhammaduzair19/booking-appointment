@@ -4,12 +4,8 @@ import { assets } from "../../assets/assets";
 import { useAppContext } from "../../context/context";
 
 const Dashboard = () => {
-    const {
-        atoken,
-        getDashboardData,
-        dashboardData,
-        cancelAppointment,
-    } = useAdminContext();
+    const { atoken, getDashboardData, dashboardData, cancelAppointment } =
+        useAdminContext();
 
     const { slotDateFormat } = useAppContext();
 
@@ -86,6 +82,10 @@ const Dashboard = () => {
                                     {item.cancelled ? (
                                         <p className="text-red-400 text-xs font-medium">
                                             Cancelled
+                                        </p>
+                                    ) : item.isCompleted ? (
+                                        <p className="text-green-600 font-medium text-xs">
+                                            Completed
                                         </p>
                                     ) : (
                                         <img

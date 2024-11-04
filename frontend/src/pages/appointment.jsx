@@ -99,6 +99,7 @@ const Appointment = () => {
     const bookAppointment = async () => {
         if (!token) {
             toast.warn("Login to book appointment");
+            localStorage.removeItem("token");
             return navigate("/login");
         }
         try {

@@ -1,15 +1,19 @@
 import React from "react";
 import { assets } from "../assets/assets";
 import { useAdminContext } from "../context/admin-context";
+import { useDoctorContext } from "../context/doctor-context";
 import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
     const { atoken, setAtoken } = useAdminContext();
+    const { dtoken, setDtoken } = useDoctorContext();
     const navigate = useNavigate();
     const logoutHandler = () => {
         navigate("/");
         atoken && setAtoken("");
+        dtoken && setDtoken("");
         atoken && localStorage.removeItem("atoken");
+        dtoken && localStorage.removeItem("dtoken");
     };
     return (
         <div className="flex justify-between items-center px-4 sm:px-10 py-3 border-b bg-white">

@@ -8,26 +8,26 @@ const MyAppointment = () => {
     const [appointments, setAppointments] = useState([]);
     const months = [
         "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-        ];
-        const slotDateFormat = (date) => {
-            const newDate = date.split("_");
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+    ];
+    const slotDateFormat = (date) => {
+        const newDate = date.split("_");
 
-            return `${newDate[0]} - ${months[Number(newDate[1]) - 1]} - ${
-                newDate[2]
-            }`;
-        };
-        const getAppointments = async () => {
+        return `${newDate[0]} - ${months[Number(newDate[1]) - 1]} - ${
+            newDate[2]
+        }`;
+    };
+    const getAppointments = async () => {
         try {
             const { data } = await axios.get(
                 backendUrl + "/user/appointments",
@@ -116,10 +116,7 @@ const MyAppointment = () => {
                                         Address:
                                     </p>
                                     <p className="text-gray-500">
-                                        {JSON.parse(doc.docData.address).line1}{" "}
-                                        <br />{" "}
-                                        {JSON.parse(doc.docData.address).line2}{" "}
-                                        <br />{" "}
+                                        {doc.docData.address}
                                     </p>
 
                                     <p className="mt-2 text-gray-500 flex items-center gap-2">
@@ -133,40 +130,49 @@ const MyAppointment = () => {
                                 </div>
                             </div>
                             <div className="flex flex-col justify-end gap-3">
-                                {!doc.cancelled ? (
-                                    <>
-                                        {doc.payment ? (
-                                            <p
-                                                className={` px-5 py-1 border border-gray-300 sm:min-w-32 rounded-sm text-white bg-green-600 text-center`}
-                                            >
-                                                Paid!
-                                            </p>
-                                        ) : (
-                                            <button
-                                                onClick={() =>
-                                                    onlinePayment(doc._id)
-                                                }
-                                                className={` px-5 py-1 border border-gray-300 sm:min-w-32 rounded-sm hover:bg-primary hover:text-white transition-all duration-300`}
-                                            >
-                                                {doc.payment ? "Paid" : "Pay"}
-                                            </button>
-                                        )}
+                                {!doc.cancelled &&
+                                    !doc.isCompleted &&
+                                    doc.payment && (
+                                        <p
+                                            className={` px-5 py-1 border border-gray-300 sm:min-w-32 rounded-sm text-white bg-green-600 text-center`}
+                                        >
+                                            Paid!
+                                        </p>
+                                    )}
 
-                                        {!doc.isCompleted && (
-                                            <button
-                                                onClick={() =>
-                                                    cancelAppointment(doc._id)
-                                                }
-                                                className="px-5 py-1 border border-gray-300 sm:min-w-32 rounded-sm hover:bg-red-500 hover:text-white duration-300 transition-all"
-                                            >
-                                                Cancel Appointment
-                                            </button>
-                                        )}
-                                    </>
-                                ) : (
+                                {!doc.payment &&
+                                    !doc.isCompleted &&
+                                    !doc.cancelled && (
+                                        <button
+                                            onClick={() =>
+                                                onlinePayment(doc._id)
+                                            }
+                                            className={` px-5 py-1 border border-gray-300 sm:min-w-32 rounded-sm hover:bg-primary hover:text-white transition-all duration-300`}
+                                        >
+                                            Pay
+                                        </button>
+                                    )}
+
+                                {!doc.isCompleted && !doc.cancelled && (
+                                    <button
+                                        onClick={() =>
+                                            cancelAppointment(doc._id)
+                                        }
+                                        className="px-5 py-1 border border-gray-300 sm:min-w-32 rounded-sm hover:bg-red-500 hover:text-white duration-300 transition-all"
+                                    >
+                                        Cancel Appointment
+                                    </button>
+                                )}
+                                {doc.cancelled && (
                                     <p className="px-5 py-1 border border-red-700 sm:min-w-32 rounded-sm text-red-600 duration-300 transition-all">
-                                        This appointment has been cancelled
+                                        Appointment cancelled
                                     </p>
+                                )}
+
+                                {doc.isCompleted && (
+                                    <button className="px-5 py-1 border border-green-700 sm:min-w-32 rounded-sm text-green-600 duration-300 transition-all">
+                                        Completed
+                                    </button>
                                 )}
                             </div>
                         </div>

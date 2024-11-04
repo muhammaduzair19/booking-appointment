@@ -12,7 +12,7 @@ const Profile = () => {
     const updateUserProfileData = async () => {
         try {
             const formData = new FormData();
-            formData.append("username", userData.username);
+            formData.append("name", userData.name);
             formData.append("phone", userData.phone);
             formData.append("address", JSON.stringify(userData.address));
             formData.append("gender", userData.gender);
@@ -82,18 +82,18 @@ const Profile = () => {
                         className="bg-gray-50 text-3xl font-medium max-w-60 mt-4  border border-zinc-400 py-1 px-2"
                         type="text"
                         name="name"
-                        value={userData?.username}
+                        value={userData?.name}
                         onChange={(e) =>
                             setUserData((prev) => ({
                                 ...prev,
-                                username: e.target.value,
+                                name: e.target.value,
                             }))
                         }
                     />
                 ) : (
                     <p className="font-medium text-3xl text-neutral-800 mt-4">
                         {" "}
-                        {userData.username}
+                        {userData.name}
                     </p>
                 )}
                 <hr className="bg-zinc-600 h-[1px] border-none" />
@@ -128,40 +128,17 @@ const Profile = () => {
                                     className="bg-gray-50 border border-zinc-400 py-1 mb-4 px-2"
                                     type="text"
                                     name="address1"
-                                    value={userData.address.line1}
+                                    value={userData.address}
                                     onChange={(e) =>
                                         setUserData((prev) => ({
                                             ...prev,
-                                            address: {
-                                                ...prev.address,
-                                                line1: e.target.value,
-                                            },
-                                        }))
-                                    }
-                                />
-                                <br />
-                                <input
-                                    className="bg-gray-50 border border-zinc-400 py-1 px-2"
-                                    type="text"
-                                    name="address2"
-                                    value={userData.address.line2}
-                                    onChange={(e) =>
-                                        setUserData((prev) => ({
-                                            ...prev,
-                                            address: {
-                                                ...prev.address,
-                                                line2: e.target.value,
-                                            },
+                                            address: e.target.value,
                                         }))
                                     }
                                 />
                             </p>
                         ) : (
-                            <p className="text-gray-500">
-                                {userData.address.line1}
-                                <br />
-                                {userData.address.line2}
-                            </p>
+                            <p className="text-gray-500">{userData.address}</p>
                         )}
                     </div>
                 </div>

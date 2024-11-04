@@ -14,8 +14,7 @@ const AddDoctor = () => {
     const [about, setAbout] = useState("");
     const [speciality, setSpeciality] = useState("general-physician");
     const [degree, setDegree] = useState("");
-    const [address1, setAddress1] = useState("");
-    const [address2, setAddress2] = useState("");
+    const [address, setAddress] = useState("");
 
     const { backendUrl, atoken } = useAdminContext();
 
@@ -35,10 +34,7 @@ const AddDoctor = () => {
             formData.append("about", about);
             formData.append("speciality", speciality);
             formData.append("degree", degree);
-            formData.append(
-                "address",
-                JSON.stringify({ line1: address1, line2: address2 })
-            );
+            formData.append("address", address);
 
             ///console
             formData.forEach((value, key) => {
@@ -204,20 +200,12 @@ const AddDoctor = () => {
                         </div>
                         <div className="flex flex-col gap-1 flex-1">
                             <p>Address</p>
-                            <input
-                                className="border rounded px-3 py-2"
-                                onChange={(e) => setAddress1(e.target.value)}
-                                value={address1}
-                                type="text"
-                                placeholder="Address 1"
-                                required
-                            />
-                            <input
-                                className="border rounded px-3 py-2"
-                                onChange={(e) => setAddress2(e.target.value)}
-                                value={address2}
-                                type="text"
-                                placeholder="Address 2"
+                            <textarea
+                                className="border w-full rounded px-3 py-2"
+                                onChange={(e) => setAddress(e.target.value)}
+                                value={address}
+                                rows={3}
+                                placeholder="Address"
                                 required
                             />
                         </div>

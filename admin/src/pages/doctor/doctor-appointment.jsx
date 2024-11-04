@@ -42,7 +42,7 @@ const DoctorAppointment = () => {
                                 src={item.userData.image}
                                 alt=""
                             />
-                            <p>{item.userData.username}</p>
+                            <p>{item.userData.name}</p>
                         </div>
                         <span>
                             <p className="text-xs inline-block px-3 uppercase p-0.5 border-primary rounded-full border">

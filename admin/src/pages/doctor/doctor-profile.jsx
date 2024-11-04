@@ -98,51 +98,22 @@ const DoctorProfile = () => {
                                 )}
                             </span>
                         </p>
-                        <div className="flex gap-2 py-2">
+                        <div className="flex gap-2 py-2 flex-col">
                             <p>Address:</p>
                             <p className="text-sm">
                                 {isEdit ? (
                                     <input
                                         type="text"
-                                        value={
-                                            JSON.parse(profileData.address)
-                                                .line1
-                                        }
+                                        value={profileData.address}
                                         onChange={(e) =>
                                             setProfileData((prev) => ({
                                                 ...prev,
-                                                address: {
-                                                    ...prev.address,
-                                                    line1: JSON.stringify(
-                                                        e.target.value
-                                                    ),
-                                                },
+                                                address: e.target.value,
                                             }))
                                         }
                                     />
                                 ) : (
-                                    JSON.parse(profileData.address).line1
-                                )}
-                                <br />
-                                {isEdit ? (
-                                    <input
-                                        type="text"
-                                        value={
-                                            JSON.parse(profileData.address)
-                                                .line2
-                                        }
-                                        onChange={(e) =>
-                                            setProfileData((prev) => ({
-                                                ...prev,
-                                                address: {
-                                                    ...prev.address,
-                                                    line2: e.target.value,
-                                                },
-                                            }))
-                                        }
-                                    />
-                                ) : (
-                                    JSON.parse(profileData.address).line2
+                                    profileData.address
                                 )}
                             </p>
                         </div>
@@ -155,7 +126,7 @@ const DoctorProfile = () => {
                                         available: !profileData.available,
                                     }))
                                 }
-                                checked={profileData.available}
+                                defaultChecked={profileData.available}
                                 type="checkbox"
                                 name=""
                             />

@@ -9,7 +9,7 @@ const Login = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [username, setUsername] = useState("");
+    const [name, setName] = useState("");
     const { token, setToken, backendUrl } = useAppContext();
 
     const onSubmitHandler = async (e) => {
@@ -18,7 +18,7 @@ const Login = () => {
             if (state === "Sign Up") {
                 const { data } = await axios.post(
                     backendUrl + "/user/register",
-                    { username, email, password }
+                    { name, email, password }
                 );
 
                 if (data.success) {
@@ -73,9 +73,9 @@ const Login = () => {
                         <p>Fullname</p>
                         <input
                             className="border border-zinc-300 rounded w-full p-2 mt-1"
-                            value={username}
+                            value={name}
                             type="text"
-                            onChange={(e) => setUsername(e.target.value)}
+                            onChange={(e) => setName(e.target.value)}
                         />
                     </div>
                 )}

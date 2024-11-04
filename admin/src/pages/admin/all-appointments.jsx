@@ -27,7 +27,7 @@ const AllAppointments = () => {
                     <p>Fee</p>
                     <p>Action</p>
                 </div>
-                {appointments?.map((item, index) => {
+                {appointments?.reverse()?.map((item, index) => {
                     console.log(item);
 
                     return (
@@ -39,7 +39,7 @@ const AllAppointments = () => {
                                     src={item.userData?.image}
                                     alt=""
                                 />
-                                <p>{item.userData?.username}</p>
+                                <p>{item.userData?.name}</p>
                             </div>
                             <p className="max-sm:hidden">
                                 {calculateAge(item.userData.dateOfBirth)}
@@ -60,11 +60,19 @@ const AllAppointments = () => {
                                 <p>
                                     {currency} {item.amount}
                                 </p>
-                                {item.payment && <span className="text-xs border border-green-400 px-3 text-white bg-green-800 py-0.5 rounded-full">Paid</span>}
+                                {item.payment && (
+                                    <span className="text-xs border border-green-400 px-3 text-white bg-green-800 py-0.5 rounded-full">
+                                        Paid
+                                    </span>
+                                )}
                             </div>
                             {item.cancelled ? (
                                 <p className="text-red-400 text-xs font-medium">
                                     Cancelled
+                                </p>
+                            ) : item.isCompleted ? (
+                                <p className="text-green-600 text-xs font-medium">
+                                    Completed
                                 </p>
                             ) : (
                                 <img

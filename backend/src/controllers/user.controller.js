@@ -12,8 +12,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 // api register user
 export const registerUser = async (req, res) => {
     try {
-        const { username, email, password } = req.body;
-        if (!username || !email || !password) {
+        const { name, email, password } = req.body;
+        if (!name || !email || !password) {
             return res.json({ success: false, message: "Missing Values" });
         }
 
@@ -36,7 +36,7 @@ export const registerUser = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const userData = {
-            username,
+            name,
             email,
             password: hashedPassword,
         };
@@ -107,15 +107,15 @@ export const getUserData = async (req, res) => {
 // Update user data
 export const updateProfile = async (req, res) => {
     try {
-        const { userId, username, phone, address, dateOfBirth, gender } =
+        const { userId, name, phone, address, dateOfBirth, gender } =
             req.body;
         const imageFile = req.file;
 
-        if (!username || !phone || !dateOfBirth || !gender) {
+        if (!name || !phone || !dateOfBirth || !gender) {
             return res.json({ success: true, message: "data missing" });
         }
         const user = await User.findByIdAndUpdate(userId, {
-            username,
+            name,
             phone,
             dateOfBirth,
             address: JSON.parse(address),
